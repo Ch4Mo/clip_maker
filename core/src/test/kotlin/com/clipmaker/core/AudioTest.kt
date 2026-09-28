@@ -122,4 +122,13 @@ class AudioTest {
         assertEquals(120f, BeatDetector.tapTempo(listOf(0L, 500_000, 1_000_000, 1_500_000))!!, 0.01f)
         assertEquals(5, BeatDetector.gridFromBpm(120f, 0, 2_000_000).size)
     }
+
+    @Test
+    fun `silence trimming finds the sound`() {
+        val buf = FloatArray(sr) // 1 s
+        for (i in 22_050 until 33_075) buf[i] = 0.5f * sin(i * 0.05).toFloat()
+        val (start, end) = com.clipmaker.core.audio.Silence.trimBounds(buf, sr)
+        assertTrue(start in 470_000L..500_000L, "start=$start")
+        assertTrue(end in 750_000L..790_000L, "end=$end")
+    }
 }

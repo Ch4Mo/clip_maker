@@ -150,3 +150,28 @@ class WaveformBuilder(private val samplesPerBucket: Int) {
         return out
     }
 }
+
+object Silence {
+    /**
+     * Finds where sound actually starts and ends in [mono] (to trim recorded samples).
+     * Returns (startUs, endUs); keeps a small pre-roll so attacks are not cut.
+     */
+    fun trimBounds(mono: FloatArray, sampleRate: Int, thresholdDb: Float = -42f, preRollMs: Int = 15): Pair<Long, Long> {
+        val threshold = dbToGain(thresholdDb)
+        val window = (sampleRate / 100).coerceAtLeast(1)
+        fun loud(i: Int): Boolean {
+            var peak = 0f
+            for (k in i until minOf(i + window, mono.size)) peak = max(peak, kotlin.math.abs(mono[k]))
+            return peak > threshold
+        }
+        var start = 0
+        while (start < mono.size && !loud(start)) start += window
+        if (start >= mono.size) return 0L to mono.size * 1_000_000L / sampleRate
+        var end = mono.size - window
+        while (end > start && !loud(end)) end -= window
+        val pre = sampleRate * preRollMs / 1000
+        val s = (start - pre).coerceAtLeast(0)
+        val e = (end + window + pre).coerceAtMost(mono.size)
+        return s * 1_000_000L / sampleRate to e * 1_000_000L / sampleRate
+    }
+}

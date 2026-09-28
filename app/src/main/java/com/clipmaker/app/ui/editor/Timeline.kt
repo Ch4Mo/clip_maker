@@ -527,7 +527,7 @@ private fun DrawScope.drawClip(
             style = TextStyle(color = Color.White.copy(alpha = alpha), fontSize = 10.sp,
                 shadow = androidx.compose.ui.graphics.Shadow(Color.Black, Offset(1f, 1f), 2f)),
             maxLines = 1,
-            size = IntSize(max(1, (w - 8f).toInt()), (height - 2).toInt().coerceAtLeast(1)),
+            size = Size(max(1f, w - 8f), (height - 2f).coerceAtLeast(1f)),
         )
         // Transition markers
         if (clip.transitionIn != null) drawPath(Path().apply { moveTo(left, top + height); lineTo(left + 14f, top + height); lineTo(left, top + height - 14f); close() }, Palette.Cyan)

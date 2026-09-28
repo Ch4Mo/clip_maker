@@ -64,7 +64,7 @@ step() {
 
 launch() {
   adb shell am force-stop "$PKG"
-  adb shell monkey -p "$PKG" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
+  adb shell am start -W -n "$PKG/.MainActivity" >/dev/null
 }
 
 for f in .github/smoke/*.json; do

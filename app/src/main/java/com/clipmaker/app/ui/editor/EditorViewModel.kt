@@ -133,7 +133,13 @@ class EditorController(val container: AppContainer, val session: ProjectSession)
         ticker = scope.launch {
             while (isActive) {
                 val p = _player.value ?: break
-                if (!scrubbing) session.playheadUs.value = p.currentPosition * 1000
+                if (!scrubbing) {
+                    // The player can run past the end of the timeline: stop there.
+                    val durationUs = session.current.durationUs
+                    val positionUs = p.currentPosition * 1000
+                    session.playheadUs.value = positionUs.coerceIn(0, durationUs)
+                    if (positionUs >= durationUs) p.pause()
+                }
                 delay(16)
             }
         }

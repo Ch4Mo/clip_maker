@@ -316,7 +316,8 @@ fun Timeline(
                     val x = xOf(t, playhead)
                     val major = (t / step) % 5 == 0L
                     drawLine(Palette.TextSecondary.copy(alpha = if (major) 0.8f else 0.35f), Offset(x, rulerPx * (if (major) 0.35f else 0.65f)), Offset(x, rulerPx), 1f)
-                    if (major) {
+                    // drawText sizes the text to the space left on its right: skip labels past the edge.
+                    if (major && x + 3f < size.width - 1f) {
                         drawText(textMeasurer, TimeFormat.short(t).substringBeforeLast('.').let { if (step < 1_000_000) TimeFormat.short(t).dropLast(1) else it },
                             Offset(x + 3f, 1f), style = TextStyle(color = Palette.TextSecondary, fontSize = 9.sp))
                     }

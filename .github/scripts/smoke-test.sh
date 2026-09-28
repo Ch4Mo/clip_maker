@@ -80,7 +80,18 @@ done
 
 launch
 step 10-home 6
-tap_text "Nouveau projet" && step 11-new-project-dialog 3
+# The floating "Nouveau projet" button is not always exposed to uiautomator: fall back to its
+# position (bottom-right, above the navigation bar).
+before=$FAILED
+if ! tap_text "Nouveau projet"; then
+  FAILED=$before
+  size=$(adb shell wm size | grep -oE '[0-9]+x[0-9]+' | tail -1)
+  density=$(adb shell wm density | grep -oE '[0-9]+' | tail -1)
+  w=${size%x*}; h=${size#*x}
+  adb shell input tap $(( w - 96 * density / 160 )) $(( h - 92 * density / 160 ))
+  echo "SMOKE: tapped bottom-right FAB position"
+fi
+step 11-new-project-dialog 3
 tap_text "Créer" && step 12-editor 8
 
 adb shell monkey -p "$PKG" --pct-syskeys 0 --throttle 150 -s 42 -v 1000 > "$OUT/monkey.txt" 2>&1

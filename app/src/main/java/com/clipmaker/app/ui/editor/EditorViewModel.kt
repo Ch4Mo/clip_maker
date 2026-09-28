@@ -3,6 +3,7 @@ package com.clipmaker.app.ui.editor
 import android.net.Uri
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.effect.MultipleInputVideoGraph
 import androidx.media3.transformer.CompositionPlayer
 import com.clipmaker.app.AppContainer
 import com.clipmaker.app.editor.ProjectSession
@@ -101,7 +102,9 @@ class EditorController(val container: AppContainer, val session: ProjectSession)
         _player.value?.release()
         _player.value = null
         val composition = runCatching { CompositionFactory.build(project) }.getOrNull() ?: return
-        val player = CompositionPlayer.Builder(container.appContext).build()
+        val player = CompositionPlayer.Builder(container.appContext)
+            .apply { if (CompositionFactory.isLayered(composition)) setVideoGraphFactory(MultipleInputVideoGraph.Factory()) }
+            .build()
         player.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 _isPlaying.value = isPlaying

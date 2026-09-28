@@ -73,12 +73,18 @@ object CompositionFactory {
 
         return Composition.Builder(sequences)
             .setEffects(compositionEffects)
-            .setVideoCompositorSettings(LayerCompositorSettings(width, height, visibility))
             .apply {
+                // A single video layer is rendered by SingleInputVideoGraph, which rejects any
+                // non-default compositor settings.
+                if (visibility.size > 1) setVideoCompositorSettings(LayerCompositorSettings(width, height, visibility))
                 if (Build.VERSION.SDK_INT >= 29) setHdrMode(Composition.HDR_MODE_TONE_MAP_HDR_TO_SDR_USING_OPEN_GL)
             }
             .build()
     }
+
+    /** Whether [composition] stacks several video layers, which needs a multiple-input video graph. */
+    fun isLayered(composition: Composition): Boolean =
+        composition.sequences.count { C.TRACK_TYPE_VIDEO in it.trackTypes } > 1
 
     private fun buildSequence(
         project: Project,

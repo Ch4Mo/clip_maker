@@ -7,6 +7,7 @@ import androidx.media3.transformer.CompositionPlayer
 import com.clipmaker.app.AppContainer
 import com.clipmaker.app.editor.ProjectSession
 import com.clipmaker.app.media.render.CompositionFactory
+import com.clipmaker.app.media.reportError
 import com.clipmaker.core.audio.SoundFxType
 import com.clipmaker.core.beat.BeatDetector
 import com.clipmaker.core.edit.SnapEngine
@@ -114,7 +115,7 @@ class EditorController(val container: AppContainer, val session: ProjectSession)
             }
 
             override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
-                _message.value = "Aperçu : ${error.errorCodeName}"
+                _message.value = "Aperçu : " + reportError("Preview failed", error)
             }
         })
         player.setComposition(composition)

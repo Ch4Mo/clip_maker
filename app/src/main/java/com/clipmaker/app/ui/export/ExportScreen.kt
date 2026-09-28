@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import com.clipmaker.app.AppContainer
 import com.clipmaker.app.editor.ProjectSession
+import com.clipmaker.app.media.reportError
 import com.clipmaker.app.ui.components.Pill
 import com.clipmaker.app.ui.components.SectionTitle
 import com.clipmaker.app.ui.theme.Palette
@@ -98,7 +99,7 @@ fun ExportScreen(container: AppContainer, session: ProjectSession, onDone: () ->
             } catch (c: CancellationException) {
                 throw c
             } catch (t: Throwable) {
-                error = t.message ?: t.javaClass.simpleName
+                error = reportError("Export failed", t)
             } finally {
                 job = null
             }

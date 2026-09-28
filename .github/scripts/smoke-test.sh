@@ -12,10 +12,14 @@ adb install -r -g app/build/outputs/apk/debug/app-debug.apk
 
 # Taps the centre of the first UI node whose text/content-desc matches $1.
 tap_text() {
-  adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1
-  local bounds
-  bounds=$(adb shell cat /sdcard/ui.xml | tr '>' '\n' | grep -E "(text|content-desc)=\"$1\"" | head -1 \
-    | sed -E 's/.*bounds="\[([0-9]+),([0-9]+)\]\[([0-9]+),([0-9]+)\]".*/\1 \2 \3 \4/')
+  local bounds="" try
+  for try in 1 2 3 4 5; do
+    adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1
+    bounds=$(adb shell cat /sdcard/ui.xml | tr '>' '\n' | grep -E "(text|content-desc)=\"$1\"" | head -1 \
+      | sed -E 's/.*bounds="\[([0-9]+),([0-9]+)\]\[([0-9]+),([0-9]+)\]".*/\1 \2 \3 \4/')
+    [ -n "$bounds" ] && break
+    sleep 2
+  done
   if [ -z "$bounds" ]; then echo "SMOKE: '$1' not found on screen"; return 1; fi
   set -- $bounds
   adb shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
@@ -29,7 +33,7 @@ step() {
   adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1
   adb shell cat /sdcard/ui.xml > "$OUT/$name.xml"
   echo "SMOKE: [$name] visible texts:"
-  tr '>' '\n' < "$OUT/$name.xml" | grep -oE 'text="[^"]+"' | sort -u | head -40
+  tr '>' '\n' < "$OUT/$name.xml" | grep -oE '(text|content-desc)="[^"]+"' | sort -u | head -40
   if ! adb shell pidof "$PKG" >/dev/null; then echo "SMOKE: app process is gone after step '$name'"; fi
 }
 
